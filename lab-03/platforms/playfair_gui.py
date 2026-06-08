@@ -74,11 +74,11 @@ class PlayfairCipherUI(QMainWindow):
         self.btn_decrypt.clicked.connect(self.process_decrypt)
 
     def _generate_matrix(self, key):
-        key = key.upper().replace('J', 'I')
+        key = "".join([c for c in key.upper() if 'A' <= c <= 'Z']).replace('J', 'I')
         matrix = []
         seen = set()
         for char in key:
-            if char.isalpha() and char not in seen:
+            if char not in seen:
                 seen.add(char)
                 matrix.append(char)
         alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ"
@@ -102,22 +102,28 @@ class PlayfairCipherUI(QMainWindow):
             return
             
         matrix = self._generate_matrix(key)
-        text = self.txt_plain.toPlainText().upper().replace('J', 'I').replace(" ", "")
-        if not text: return
+        plain_text = self.txt_plain.toPlainText().upper()
+        raw_text = "".join([c for c in plain_text if 'A' <= c <= 'Z']).replace('J', 'I')
+        if not raw_text:
+            return
         
         prepared_text = ""
         i = 0
-        while i < len(text):
-            prepared_text += text[i]
-            if i + 1 < len(text):
-                if text[i] == text[i+1]:
-                    prepared_text += 'X'
-                else:
-                    prepared_text += text[i+1]
+        while i < len(raw_text):
+            char1 = raw_text[i]
+            if i + 1 < len(raw_text):
+                char2 = raw_text[i+1]
+                if char1 == char2:
+                    filler = 'Q' if char1 == 'X' else 'X'
+                    prepared_text += char1 + filler
                     i += 1
+                else:
+                    prepared_text += char1 + char2
+                    i += 2
             else:
-                prepared_text += 'X'
-            i += 1
+                filler = 'Q' if char1 == 'X' else 'X'
+                prepared_text += char1 + filler
+                i += 1
             
         ciphertext = ""
         for i in range(0, len(prepared_text), 2):
@@ -139,8 +145,10 @@ class PlayfairCipherUI(QMainWindow):
             return
             
         matrix = self._generate_matrix(key)
-        text = self.txt_cipher.toPlainText().upper().replace('J', 'I').replace(" ", "")
-        if not text: return
+        cipher_text = self.txt_cipher.toPlainText().upper()
+        text = "".join([c for c in cipher_text if 'A' <= c <= 'Z']).replace('J', 'I')
+        if not text:
+            return
         if len(text) % 2 != 0:
             QMessageBox.warning(self, "Lỗi", "Độ dài bản mã Playfair hợp lệ phải là số chẵn!")
             return

@@ -75,8 +75,8 @@ class VigenereCipherUI(QMainWindow):
 
     def get_key(self):
         key = self.txt_key.text().strip().upper()
-        if not key or not key.isalpha():
-            QMessageBox.warning(self, "Lỗi Nhập Liệu", "Khóa (Key) phải là một chuỗi chữ cái không chứa số hoặc ký tự đặc biệt!")
+        if not key or not all('A' <= c <= 'Z' for c in key):
+            QMessageBox.warning(self, "Lỗi Nhập Liệu", "Khóa (Key) phải là một chuỗi chữ cái tiếng Anh (A-Z)!")
             return None
         return key
 
@@ -85,15 +85,20 @@ class VigenereCipherUI(QMainWindow):
         if not key: return
             
         plain_text = self.txt_plain.toPlainText()
-        cipher_text = ""
-        key_index = 0
+        n = len(plain_text)
+        if n == 0: return
         
-        for char in plain_text:
-            if char.isalpha():
-                base = 65 if char.isupper() else 97
-                k = ord(key[key_index % len(key)]) - 65
-                cipher_text += chr((ord(char) - base + k) % 26 + base)
-                key_index += 1
+        repeated_key = (key * (n // len(key) + 1))[:n]
+        
+        cipher_text = ""
+        for i in range(n):
+            char = plain_text[i]
+            if 'A' <= char <= 'Z':
+                k = ord(repeated_key[i]) - 65
+                cipher_text += chr((ord(char) - 65 + k) % 26 + 65)
+            elif 'a' <= char <= 'z':
+                k = ord(repeated_key[i]) - 65
+                cipher_text += chr((ord(char) - 97 + k) % 26 + 97)
             else:
                 cipher_text += char
                 
@@ -104,15 +109,20 @@ class VigenereCipherUI(QMainWindow):
         if not key: return
             
         cipher_text = self.txt_cipher.toPlainText()
-        plain_text = ""
-        key_index = 0
+        n = len(cipher_text)
+        if n == 0: return
         
-        for char in cipher_text:
-            if char.isalpha():
-                base = 65 if char.isupper() else 97
-                k = ord(key[key_index % len(key)]) - 65
-                plain_text += chr((ord(char) - base - k + 26) % 26 + base)
-                key_index += 1
+        repeated_key = (key * (n // len(key) + 1))[:n]
+        
+        plain_text = ""
+        for i in range(n):
+            char = cipher_text[i]
+            if 'A' <= char <= 'Z':
+                k = ord(repeated_key[i]) - 65
+                plain_text += chr((ord(char) - 65 - k + 26) % 26 + 65)
+            elif 'a' <= char <= 'z':
+                k = ord(repeated_key[i]) - 65
+                plain_text += chr((ord(char) - 97 - k + 26) % 26 + 97)
             else:
                 plain_text += char
                 

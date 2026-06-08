@@ -78,7 +78,11 @@ class CaesarCipherUI(QMainWindow):
     # Hàm xử lý lấy Key an toàn
     def get_key(self):
         try:
-            return int(self.txt_key.text().strip())
+            key = int(self.txt_key.text().strip())
+            if not (1 <= key <= 25):
+                QMessageBox.warning(self, "Lỗi Nhập Liệu", "Khóa (Key) phải là một số nguyên trong khoảng từ 1 đến 25!")
+                return None
+            return key
         except ValueError:
             QMessageBox.warning(self, "Lỗi Nhập Liệu", "Khóa (Key) bắt buộc phải là một số nguyên!")
             return None
@@ -93,9 +97,10 @@ class CaesarCipherUI(QMainWindow):
         cipher_text = ""
         
         for char in plain_text:
-            if char.isalpha():
-                base = 65 if char.isupper() else 97
-                cipher_text += chr((ord(char) - base + key) % 26 + base)
+            if 'A' <= char <= 'Z':
+                cipher_text += chr((ord(char) - 65 + key) % 26 + 65)
+            elif 'a' <= char <= 'z':
+                cipher_text += chr((ord(char) - 97 + key) % 26 + 97)
             else:
                 cipher_text += char
                 
@@ -111,9 +116,10 @@ class CaesarCipherUI(QMainWindow):
         plain_text = ""
         
         for char in cipher_text:
-            if char.isalpha():
-                base = 65 if char.isupper() else 97
-                plain_text += chr((ord(char) - base - key) % 26 + base)
+            if 'A' <= char <= 'Z':
+                plain_text += chr((ord(char) - 65 - key) % 26 + 65)
+            elif 'a' <= char <= 'z':
+                plain_text += chr((ord(char) - 97 - key) % 26 + 97)
             else:
                 plain_text += char
                 

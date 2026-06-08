@@ -76,19 +76,23 @@ class RailFenceCipherUI(QMainWindow):
     def get_key(self):
         try:
             key = int(self.txt_key.text().strip())
-            if key <= 1: raise ValueError
+            if key < 1: raise ValueError
             return key
         except ValueError:
-            QMessageBox.warning(self, "Lỗi Nhập Liệu", "Khóa (Số đường ray) phải là một số nguyên lớn hơn 1!")
+            QMessageBox.warning(self, "Lỗi Nhập Liệu", "Khóa (Số đường ray) phải là một số nguyên dương!")
             return None
 
     def process_encrypt(self):
         key = self.get_key()
-        if not key: return
+        if key is None: return
             
         text = self.txt_plain.toPlainText()
         if not text: return
         
+        if key == 1 or key >= len(text):
+            self.txt_cipher.setPlainText(text)
+            return
+            
         fence = [[] for _ in range(key)]
         rail = 0
         direction = 1
@@ -103,11 +107,15 @@ class RailFenceCipherUI(QMainWindow):
 
     def process_decrypt(self):
         key = self.get_key()
-        if not key: return
+        if key is None: return
             
         text = self.txt_cipher.toPlainText()
         if not text: return
         
+        if key == 1 or key >= len(text):
+            self.txt_plain.setPlainText(text)
+            return
+            
         fence = [[None] * len(text) for _ in range(key)]
         rail = 0
         direction = 1
